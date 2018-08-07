@@ -7,6 +7,7 @@ import xlrd
 import pandas as pd
 import csv
 import os
+#FrontView------------
 root = Tk()
 root.geometry("1840x840+10+10")
 image = Image.open(r'C:\Users\kiran\Desktop\AllDepts\process.jpg')
@@ -27,6 +28,7 @@ url=StringVar()
 InputFileName=StringVar()
 entry_box=Entry(root,textvariable=url,width=55).place(x=280,y=210)
 entry_box1=Entry(root,textvariable=InputFileName,width=55).place(x=280,y=300)
+#ChromeDriverPath--------------
 path_to_chromedriver = r'C:\Users\kiran\Desktop\chromedriver_win32\chromedriver'
 browser = webdriver.Chrome(executable_path = path_to_chromedriver)
 #url = r'http://jntukresults.edu.in/view-results-56735897.html'
@@ -34,6 +36,7 @@ def Browser():
     browser.get(url.get())
     time.sleep(2)
     while(True):
+        #ReadXlsxFile---------
         workbook = xlrd.open_workbook(InputFileName.get())
         worksheet = workbook.sheet_by_name("Sheet1")
         num_rows = worksheet.nrows
@@ -46,13 +49,16 @@ def Browser():
             for curr_row in range(1, num_rows):
                 reg_num = worksheet.cell_value(curr_row, curr_col)
                 print(reg_num)
+                #PassRegistrationToTextFieldOfUniversityWebsite---------
                 browser.find_element_by_css_selector('input[id="ht"]').send_keys(reg_num)
+                #ClickTheButton--------------
                 browser.find_element_by_css_selector("input[type='button']").click()
                 time.sleep(1)
                 #subjects
                 if count==0:
                     subject_names=[]
                     subject_names.append("Reg_Num")
+                    #GetTheSubjectNamesByUsingXpath-------------------
                     subjects=browser.find_elements_by_xpath('//*[@id="rs"]/table/tbody/tr/td[2]')
                     for subject in subjects:
                         subject_names.append(subject.text)
@@ -64,6 +70,7 @@ def Browser():
                 #Grades
                 Grades=[]
                 Grades.append(reg_num)
+                #GetTheGradesByUsingXpath--------------------------
                 Grade=browser.find_elements_by_xpath('//*[@id="rs"]/table/tbody/tr/td[3]')
                 for Gra in Grade:
                     Grades.append(Gra.text)
@@ -78,6 +85,7 @@ def Browser():
                     Grades.append(p)
                 w=Grades.count("F")
                 Grades.append(w)
+                #ConvertGradesToPointsForCalculatingAvg------------
                 gpoints=[]
                 for g in Grades:
                     if g=='A':
@@ -97,14 +105,18 @@ def Browser():
                 #Credits
                 Credit_points=[]
                 Credit_points.append(reg_num)
+                #GetTheCreditPointsByUsingXpath---------------
                 Credits=browser.find_elements_by_xpath('//*[@id="rs"]/table/tbody/tr/td[4]')
                 for Credit in Credits:
                     Credit_points.append(Credit.text)
+                 #Calculating AvgAnd SGPA-------------
                 m=Credit_points[1:]
+                
                 n=[]
                 for i in m:
                     n.append(int(i))
                 print(n)
+                
                 multiply=[a*b for a,b in zip(n,gpoints)]
                 print(multiply)
                 sgpa=(sum(multiply)/sum(n))
@@ -130,7 +142,7 @@ def Browser():
                 count=count+1
         break
     browser.close()
-    #-------------------------------------------
+    #Read TheCsv For Analyse The Data-------------------------------------------
     df=pd.read_csv(r'Grades.csv')
     df.to_excel('accounts.xlsx', index=False)
     ExcelFileName= r'accounts.xlsx'
